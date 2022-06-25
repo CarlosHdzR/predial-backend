@@ -1,0 +1,9 @@
+JWT_SECRET_KEY =<YourPassword>
+MONGODB_URI=<MongoDbURI>
+USER_MAIL_SERVER=<Email-ServidorDeCorreo>
+PASS_MAIL_SERVER=<Password-ServidorDeCorreo>
+ADMIN_PATH=/admin/dashboard
+USER_EXT_PATH=/user-ext/home
+CLOUD_NAME=<Cloudinary-CloudName>
+CLOUD_API_KEY=<Cloudinary-ApiKey>
+CLOUD_API_SECRET=<Cloudinary-ApiSecret->
