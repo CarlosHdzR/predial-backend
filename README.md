@@ -1,25 +1,24 @@
-# Plataforma de Gestión Catastral - Backend
-Plataforma que permite gestionar el cobro catastral de los predios de una ciudad.
-Los tipos de usuarios que maneja el sistema son **administrador (rol 1)**, **usuario externo (rol 2)** y **usuario interno (rol 3)**.
+# Plataforma de Gestión Catastral
+Plataforma que permite gestionar el cobro catastral de los predios de una ciudad.  
+Los tipos de usuarios que maneja el sistema son **Administrador (rol 1)**, **Usuario Interno (rol 2)** y **Usuario Externo (rol 3)**.
+
+El administrador tiene control total de la plataforma y por lo tanto está en la capacidad de:
+* Crear usuarios internos.
+* Gestionar usuarios (internos y externos).
+* Crear predios.
+* Gestionar predios.
 
 El usuario interno está en la capacidad de:
-* Crear predio indicando el código, nombre del propietario, cédula del propietario, área total del predio, área construida del predio, valor del predio, valor predial, dirección y barrio.
+* Crear predios.
 * Gestionar predios.
-* Definir la fecha de pago máxima en un año.
-* Definir la fechas de pagos máximas para tener descuentos.
-* Aprobar/reprobar convenio de pago.
 
 El usuario externo está en la capacidad de:
 * Registrarse en la plataforma.
-* Asociar predios a la cuenta dado el código (será posible si el predio está a nombre del usuario).
+* Asociar predios a su cuenta dado el código (será posible si el predio está a nombre del usuario).
 * Realizar pago del valor predial. (Simulado)
 * Solicitar convenio de pago dado un cobro generado.
 
-El administrador tiene control total de la plataforma y por lo tanto está en la capacidad de:
-* Gestionar usuarios. 
-* Gestionar predios.
-
-Todos los usuarios pueden editar su propio perfil e incluso subir un avatar que los identifique.
+Todos los usuarios pueden editar su propio perfil, cambiar su contraseña e incluso subir un avatar que los identifique. También pueden solicitar restablecimiento de contraseña a través de un one-time-link enviado a su correo.
 
 ## Tecnologías y librerías usadas
 * Node
