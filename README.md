@@ -11,6 +11,7 @@ El administrador tiene control total de la plataforma y por lo tanto está en la
 El usuario interno está en la capacidad de:
 * Crear predios.
 * Gestionar predios.
+* Ver información de los usuarios externos.
 
 El usuario externo está en la capacidad de:
 * Registrarse en la plataforma.
@@ -23,11 +24,14 @@ Todos los usuarios pueden editar su propio perfil, cambiar su contraseña e incl
 ## Tecnologías y librerías usadas
 * Node
 * Express
-* MongoDB Atlas
+* Bcryptjs
+* Jsonwebtoken
+* MongoDB (Atlas)
 * Mongoose
 * Nodemailer
-* Cloudinary  
-Entre otras.
+* Cloudinary
+* Express-fileupload
+* Fs-extra
 
 ## Ejecutar app
 1. Clonar o descargar el proyecto en tu equipo.
