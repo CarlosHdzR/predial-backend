@@ -9,24 +9,18 @@ const crypto = require('crypto');
 const { config } = require('../config');
 const { uploadAvatar, deleteAvatar } = require('./avatar.controller');
 
-const { ADMIN, USER_EXT } = config.PATH
-
 // Iniciar sesión:
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body
-        const user = await userModel.findOne({ email }) // Validar usuario
+        const user = await userModel.findOne({ email, estado: 1 }) // Validar usuario
         if (!user) {
             return res.send({ status: "error", msg: "Credenciales NO válidas. Intentelo de nuevo!!!" });
         }
         const passOK = await compare(password, user.password) // Validar contraseña
         if (passOK) {
             const token = generateAuthToken(user);
-            if (user.rol === 3) {
-                return res.status(200).send({ status: "ok", user: user.nombres, token, path: USER_EXT });
-            } else if (user.rol === 1 || user.rol === 2) {
-                return res.status(200).send({ status: "ok", user: user.nombres, token, path: ADMIN });
-            }
+            return res.status(200).send({ status: "ok", user, token });
         } else {
             return res.send({ status: "error", msg: "Credenciales NO válidas. Intentelo de nuevo!!!" });
         }
@@ -70,7 +64,8 @@ exports.createUser = async (req, res) => {
                 }
                 return res.status(200).send({ status: "ok", msg: "Usuario creado con éxito!!!", user });
             } else { // Si es usuario externo (3)
-                return res.status(200).send({ status: "ok", msg: "Su cuenta fue creada con éxito. Ya puede iniciar sesión!!!", user });
+                const newUser = await userModel.findOne({ nro_doc });
+                return res.status(200).send({ status: "ok", msg: "Su cuenta fue creada con éxito. Ya puede iniciar sesión!!!", user: newUser });
             }
         } else {
             if (user.rol === 2) {
@@ -87,18 +82,20 @@ exports.createUser = async (req, res) => {
 // Editar usuario:
 exports.updateUser = async (req, res) => {
     try {
-        const data = req.body
-        const _id = req.params._id
-        const foundUser = await userModel.findOne({ _id }) // Buscar usuario a editar
+        const data = req.body;
+        const _id = req.params._id;
+        const { rol } = getPayload(req.headers.authorization);
+        const foundUser = await userModel.findOne({ _id }); // Buscar usuario a editar
         if (req.files?.imagen) { // Editar avatar de usuario
             const result = await uploadAvatar(req, foundUser)
             data.avatar = { public_id: result.public_id, secure_url: result.secure_url }
         } else { // Eliminar avatar de usuario
-            data.avatar = await deleteAvatar(data, foundUser)
+            data.avatar = await deleteAvatar(data, foundUser);
         }
-        await userModel.updateOne({ _id }, { $set: data })
-        const users = await userModel.find({ estado: 1 }) // Obtener usuarios actualizados
-        return res.status(200).send({ status: "ok", msg: "Usuario actualizado con éxito!!!", users });
+        await userModel.updateOne({ _id }, { $set: data });
+        const msg = rol === 1 ? "Usuario actualizado con éxito!!!" : "Perfil actualizado con éxito!!!";
+        const users = await userModel.find({ estado: 1 }); // Obtener usuarios actualizados
+        return res.status(200).send({ status: "ok", msg, users });
     } catch (error) {
         console.log("Error editando usuario: " + error)
         return res.send({ status: "error", msg: "El usuario no pudo ser actualizado!!!" });
@@ -168,12 +165,12 @@ exports.getResetLink = async (req, res) => {
             return res.send({ status: "ok", msg: "Por favor, revise su correo!!!" })
         }
         const resetToken = crypto.randomBytes(32).toString('hex') // Generar token        
-        await userModel.updateOne({ email }, 
-            { 
+        await userModel.updateOne({ email },
+            {
                 $set: {
                     reset_token: resetToken,
                     expire_token: Date.now() + 3600000 // (Hora actual + 1h)
-                } 
+                }
             })
         const { nombres } = user
         transporter.sendMail(resetPasswordOptions(email, nombres, resetToken)) // Enviar one-time-link al "email" del usuario

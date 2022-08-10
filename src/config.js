@@ -7,10 +7,6 @@ exports.config = {
         USER: process.env.USER_MAIL_SERVER,
         PASSWORD: process.env.PASS_MAIL_SERVER
     },
-    PATH: {
-        ADMIN: process.env.ADMIN_PATH,
-        USER_EXT: process.env.USER_EXT_PATH
-    },
     CLOUD: {
         CLOUD_NAME: process.env.CLOUD_NAME,
         CLOUD_API_KEY: process.env.CLOUD_API_KEY,
