@@ -6,8 +6,8 @@ const { generateAuthToken } = require('../utils/generateAuthToken');
 const { getPayload } = require('../utils/getPayload');
 const { deleteImage } = require('../utils/cloudinary');
 const crypto = require('crypto');
-const { config } = require('../config');
 const { uploadAvatar, deleteAvatar } = require('./avatar.controller');
+const { predioModel } = require('../models/predio.model');
 
 // Iniciar sesión:
 exports.login = async (req, res) => {
@@ -197,5 +197,26 @@ exports.resetPassword = async (req, res) => {
     } catch (error) {
         console.log("Error restableciendo contraseña: " + error)
         res.send({ status: "error", msg: "No se pudo actualizar la contraseña" });
+    }
+}
+
+// Asociar predios a usuario:
+exports.associatePredio = async (req, res) => {
+    try {
+        const user = req.params;
+        const { predio_id } = req.body;
+        const predioToAssociate = await predioModel.findOne({ _id: predio_id });
+        if (!predioToAssociate.asociado) {
+            await userModel.updateOne({ _id: user._id }, {
+                $push: { predios: predio_id }
+            });
+            await predioModel.updateOne({ _id: predio_id }, { $set: { asociado: true } });
+            res.send({ status: "ok", msg: "Predio asociado con éxito!!!" });
+        } else {
+            res.send({ status: "error", msg: "El predio ya fue asociado!!!" });
+        }
+    } catch (error) {
+        console.log("Error asociando predio: " + error)
+        res.send({ status: "error", msg: "No fue posible asociar el predio" });
     }
 }

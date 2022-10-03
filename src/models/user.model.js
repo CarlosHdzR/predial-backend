@@ -68,7 +68,15 @@ const userSchema = new Schema({
     expire_token: {
         type: Date
     },
+    predios: [
+        {
+            type: Schema.Types.ObjectId, ref: 'predios', autopopulate: true
+        }
+    ]
 })
+
+// Autopoblar el campo "predios"
+userSchema.plugin(require('mongoose-autopopulate'));
 
 // Setear valores del campo "avatar"
 userSchema.methods.setAvatar = function setAvatar(result) {
