@@ -56,6 +56,11 @@ const predioSchema = new Schema({
         type: Number,
         default: 1,
         required: true
+    },
+    asociado: {
+        type: Boolean,
+        default: false,
+        required: true
     }
 })
 

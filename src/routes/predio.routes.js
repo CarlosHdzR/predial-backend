@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const {
     getPredios, createPredio, updatePredio,
-    deletePredio, findPrediosByDoc, findPredioByCode
+    deletePredio, findPrediosByDoc, getAssociatedPredios
 } = require('../controllers/predio.controller');
 const { getHistorial } = require('../controllers/historial.controller');
 const { authPredios } = require('../middlewares/authPredios');
@@ -14,6 +14,6 @@ predioRoutes.post("/create", authPredios, createPredio)
 predioRoutes.put("/edit/:_id", authPredios, updatePredio)
 predioRoutes.delete("/delete/:_id", authPredios, deletePredio)
 predioRoutes.get("/find/:doc_prop", findPrediosByDoc)
-predioRoutes.get("/find-one/:codigo", findPredioByCode)
+predioRoutes.get("/list-associated-predios/:doc_prop", getAssociatedPredios)
 
 exports.predioRoutes = predioRoutes;

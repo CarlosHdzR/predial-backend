@@ -98,18 +98,17 @@ exports.findPrediosByDoc = async (req, res) => {
     }
 }
 
-// Consultar predio pór Código del Predio:
-exports.findPredioByCode = async (req, res) => {
+// Listar predios asociados de un usuario:
+exports.getAssociatedPredios = async (req, res) => {
     try {
-        const codigo = req.params.codigo
-        const predio = await predioModel.findOne({ codigo })
-        if (predio !== null) {
-            return res.send({ status: "ok", msg: "Predio Encontrado", data: predio });
-        } else {
-            return res.send({ status: "error", msg: "Predio NO encontrado", data: {} });
+        const doc_prop = req.params.doc_prop;
+        const associatedPredios = await predioModel.find({ estado: 1, doc_prop, asociado: true })
+        if (associatedPredios !== null && associatedPredios.length > 0) {
+            return res.status(200).send({ status: "ok", msg: "Predios visualizados!!!", associatedPredios });
         }
+        return res.send({ status: "error", msg: "Predios NO encontrados!!!" });
     } catch (error) {
-        console.log("Error consultando predio: " + error)
-        return res.send({ status: "error", msg: "Predio NO encontrado", data: {} });
+        console.log("Error listando predios asociados: " + error)
+        return res.send({ status: "error", msg: "Predios NO encontrados!!!" });
     }
 }
