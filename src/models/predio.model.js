@@ -61,6 +61,11 @@ const predioSchema = new Schema({
         type: Boolean,
         default: false,
         required: true
+    },
+    owner: {
+        type: Schema.Types.ObjectId,
+        default: [],
+        ref: 'users',
     }
 })
 

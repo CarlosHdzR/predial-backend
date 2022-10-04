@@ -70,7 +70,10 @@ const userSchema = new Schema({
     },
     predios: [
         {
-            type: Schema.Types.ObjectId, ref: 'predios', autopopulate: true
+            type: Schema.Types.ObjectId,
+            default: [],
+            ref: 'predios',
+            autopopulate: true
         }
     ]
 })

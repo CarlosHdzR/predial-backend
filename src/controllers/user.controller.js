@@ -203,15 +203,22 @@ exports.resetPassword = async (req, res) => {
 // Asociar predios a usuario:
 exports.associatePredio = async (req, res) => {
     try {
-        const user = req.params;
+        const user_id = req.params._id;
         const { predio_id } = req.body;
         const predioToAssociate = await predioModel.findOne({ _id: predio_id });
         if (!predioToAssociate.asociado) {
-            await userModel.updateOne({ _id: user._id }, {
-                $push: { predios: predio_id }
-            });
-            await predioModel.updateOne({ _id: predio_id }, { $set: { asociado: true } });
-            res.send({ status: "ok", msg: "Predio asociado con éxito!!!" });
+            await userModel.updateOne({ _id: user_id },
+                {
+                    $push: { predios: predio_id }
+                });
+            await predioModel.updateOne({ _id: predio_id },
+                {
+                    $push: { owner: user_id },
+                    $set: { asociado: true }
+                }
+            );
+            const associatedPredio = await predioModel.findOne({ _id: predio_id });
+            res.send({ status: "ok", msg: "Predio asociado con éxito!!!", associatedPredio });
         } else {
             res.send({ status: "error", msg: "El predio ya fue asociado!!!" });
         }
