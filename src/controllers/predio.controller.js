@@ -101,8 +101,8 @@ exports.findPrediosByDoc = async (req, res) => {
 // Listar predios asociados de un usuario:
 exports.getAssociatedPredios = async (req, res) => {
     try {
-        const doc_prop = req.params.doc_prop;
-        const associatedPredios = await predioModel.find({ estado: 1, doc_prop, asociado: true })
+        const { user_id } = req.params;
+        const associatedPredios = await predioModel.find({ owner: user_id })
         if (associatedPredios !== null && associatedPredios.length > 0) {
             return res.status(200).send({ status: "ok", msg: "Predios visualizados!!!", associatedPredios });
         }
