@@ -213,8 +213,10 @@ exports.associatePredio = async (req, res) => {
                 });
             await predioModel.updateOne({ _id: predio_id },
                 {
-                    $push: { owner: user_id },
-                    $set: { asociado: true }
+                    $set: { 
+                        asociado: true,
+                        owner: user_id
+                    }
                 }
             );
             const associatedPredio = await predioModel.findOne({ _id: predio_id });
