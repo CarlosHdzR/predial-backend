@@ -4,9 +4,9 @@ const { config } = require('../config');
 exports.connectToDB = () => {
     try {
         mongoose.connect(config.MONGODB_URI)
-        console.log("Connected to Database!!!")
+        console.log("\n********** CONNECTION TO DATABASE SUCCESSFUL **********")
     } catch (error) {
-        console.log("Connection to Database failed!!!");
+        console.log("********** CONNECTION TO DATABASE FAILED **********");
         console.log(error);
     }
 }

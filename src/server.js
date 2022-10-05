@@ -22,5 +22,5 @@ connectToDB();
 
 // Iniciar servidor:
 app.listen(PORT, function () {
-    console.log(`Server listening on port ${PORT}!!!`);
+    console.log(`********** SERVER LISTENING ON PORT ${PORT} **********\n`);
 })
