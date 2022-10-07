@@ -65,13 +65,15 @@ const userSchema = new Schema({
     expire_token: {
         type: Date
     },
-    user_properties: {
-        type: Schema.Types.ObjectId,
-        ref: 'predios',
-        autopopulate: {
-            select: ['codigo', 'direccion_predio', 'valor_predio', 'valor_predial']
+    user_properties: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'predios',
+            autopopulate: {
+                select: ['codigo', 'direccion_predio', 'valor_predio', 'valor_predial']
+            }
         }
-    }
+    ]
 })
 
 // Autopoblar el campo "predios"
