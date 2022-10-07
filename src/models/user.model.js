@@ -3,19 +3,19 @@ const Schema = mongoose.Schema;
 const { genSalt, hash } = require('bcryptjs');
 
 const userSchema = new Schema({
-    nombres: {
+    name: {
         type: String,
         required: true
     },
-    apellidos: {
+    surname: {
         type: String,
         required: true
     },
-    tipo_doc: {
+    id_type: {
         type: String,
         required: true
     },
-    nro_doc: {
+    id_number: {
         type: Number,
         required: true,
         unique: true
@@ -29,38 +29,35 @@ const userSchema = new Schema({
         type: String,
         required: true
     },
-    telefono: {
+    phone: {
         type: String,
         required: true
     },
-    direccion: {
+    address: {
         type: String,
         required: true
     },
-    rol: {
+    role: {
         type: Number,
         required: true
     },
-    estado: {
-        type: Number,
-        default: 1,
+    active: {
+        type: Boolean,
+        default: true,
         required: true
     },
     avatar: {
         public_id: String,
         secure_url: String,
     },
-    created_predios: {
+    created_properties: {
         type: Number,
-        default: null
     },
-    edited_predios: {
+    edited_properties: {
         type: Number,
-        default: null
     },
-    deleted_predios: {
+    deleted_properties: {
         type: Number,
-        default: null
     },
     reset_token: {
         type: String
@@ -68,14 +65,13 @@ const userSchema = new Schema({
     expire_token: {
         type: Date
     },
-    predios: [
-        {
-            type: Schema.Types.ObjectId,
-            default: [],
-            ref: 'predios',
-            autopopulate: true
+    user_properties: {
+        type: Schema.Types.ObjectId,
+        ref: 'predios',
+        autopopulate: {
+            select: ['codigo', 'direccion_predio', 'valor_predio', 'valor_predial']
         }
-    ]
+    }
 })
 
 // Autopoblar el campo "predios"

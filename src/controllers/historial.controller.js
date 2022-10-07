@@ -18,7 +18,7 @@ exports.getHistorial = async (req, res) => {
 exports.createHistorial = (user, action, codigo) => {
     try {
         const historial = new historialModel()
-        historial.author = user.nombres
+        historial.author = user.name
         historial.action = action
         historial.fecha = Date.now()
         historial.code = codigo

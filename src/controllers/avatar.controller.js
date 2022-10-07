@@ -5,8 +5,8 @@ exports.uploadAvatar = async (req, user) => {
     if (user.avatar.public_id) { // Verificar si el usuario ya tiene "avatar"
         await deleteImage(user.avatar.public_id) // Eliminar imágen de Cloudinary
     }
-    const result = await uploadImage(req.files.imagen.tempFilePath) // Subir imagen a Cloudinary
-    await fs.unlink(req.files.imagen.tempFilePath) // Borrar archivo de la carpeta temporal
+    const result = await uploadImage(req.files.image.tempFilePath) // Subir imagen a Cloudinary
+    await fs.unlink(req.files.image.tempFilePath) // Borrar archivo de la carpeta temporal
     return result
 }
 

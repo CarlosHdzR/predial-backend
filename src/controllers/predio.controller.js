@@ -25,14 +25,14 @@ exports.createPredio = async (req, res) => {
     try {
         const predio = await new predioModel(req.body)
         const { email_prop, nom_prop, codigo, doc_prop, direccion_predio } = req.body
-        const { nro_doc } = getPayload(req.headers.authorization) // Extraer "nro_doc" del usuario que está creando el predio
+        const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está creando el predio
         const existingPredio = await predioModel.findOne({ $or: [{ codigo }, { direccion_predio }] })
         if (!existingPredio) {
             await predio.save()
             transporter.sendMail(newPredioOptions(email_prop, nom_prop, codigo, doc_prop)) // Enviar email al propietario del predio
-            const loggedUser = await userModel.findOne({ nro_doc }) // Buscar usuario que creó el predio
-            loggedUser.created_predios += 1
-            const user = updateUserPredioFields(loggedUser) // Actualizar campo "created_predios"
+            const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que creó el predio
+            loggedUser.created_properties += 1
+            const user = updateUserPredioFields(loggedUser) // Actualizar campo "created_properties"
             const historial = createHistorial(loggedUser, "creó", codigo)
             return res.status(200).send({ status: "ok", msg: "Predio creado con exito!!!", predio, user, historial });
         } else {
@@ -49,11 +49,11 @@ exports.updatePredio = async (req, res) => {
     try {
         const { codigo } = req.body
         const _id = req.params._id
-        const { nro_doc } = getPayload(req.headers.authorization) // Extraer "nro_doc" del usuario que está editando el predio  
+        const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está editando el predio  
         await predioModel.updateOne({ _id }, { $set: req.body })
-        const loggedUser = await userModel.findOne({ nro_doc }) // Buscar usuario que editó el predio
-        loggedUser.edited_predios += 1
-        updateUserPredioFields(loggedUser) // Actualizar campo "edited_predios"
+        const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que editó el predio
+        loggedUser.edited_properties += 1
+        updateUserPredioFields(loggedUser) // Actualizar campo "edited_properties"
         const historial = createHistorial(loggedUser, "editó", codigo)
         const users = await userModel.find({ estado: 1 }) // Obtener usuarios actualizados
         const predios = await predioModel.find({ estado: 1 }) // Obtener predios actualizados
@@ -69,11 +69,11 @@ exports.deletePredio = async (req, res) => {
     try {
         const _id = req.params._id
         const predio = await predioModel.findOne({ _id }) // Buscar predio a eliminar
-        const { nro_doc } = getPayload(req.headers.authorization) // Extraer "nro_doc" del usuario que está eliminando el predio 
+        const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está eliminando el predio 
         await predioModel.updateOne({ _id }, { $set: { estado: null } }) // Predio inactivo (estado: null)
-        const loggedUser = await userModel.findOne({ nro_doc }) // Buscar usuario que eliminó el predio
-        loggedUser.deleted_predios += 1
-        const user = updateUserPredioFields(loggedUser) // Actualizar campo "deleted_predios"
+        const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que eliminó el predio
+        loggedUser.deleted_properties += 1
+        const user = updateUserPredioFields(loggedUser) // Actualizar campo "deleted_properties"
         const historial = createHistorial(loggedUser, "eliminó", predio.codigo)
         return res.status(200).send({ status: "ok", msg: "Predio eliminado con exito!!!", user, historial });
     } catch (error) {

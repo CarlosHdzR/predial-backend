@@ -13,13 +13,14 @@ const { predioModel } = require('../models/predio.model');
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body
-        const user = await userModel.findOne({ email, estado: 1 }) // Validar usuario
+        const user = await userModel.findOne({ email, active: true }) // Validar usuario
         if (!user) {
             return res.send({ status: "error", msg: "Credenciales NO válidas. Intentelo de nuevo!!!" });
         }
         const passOK = await compare(password, user.password) // Validar contraseña
         if (passOK) {
             const token = generateAuthToken(user);
+            console.log(user);
             return res.status(200).send({ status: "ok", user, token });
         } else {
             return res.send({ status: "error", msg: "Credenciales NO válidas. Intentelo de nuevo!!!" });
@@ -32,7 +33,7 @@ exports.login = async (req, res) => {
 // Listar usuarios:
 exports.getUsers = async (req, res) => {
     try {
-        const users = await userModel.find({ estado: 1 }) // Usuarios activos (estado: 1)
+        const users = await userModel.find({ active: true }) // Usuarios activos (active: true)
         if (users !== null) {
             return res.status(200).send({ status: "ok", msg: "Usuarios encontrados!!!", users });
         } else {
@@ -48,27 +49,27 @@ exports.createUser = async (req, res) => {
     try {
         const user = await new userModel(req.body)
         user.avatar = ""
-        const { nro_doc, email, nombres, password } = req.body
-        const existingUser = await userModel.findOne({ $or: [{ nro_doc }, { email }] }) // Validar si el usuario ya existe
+        const { id_number, email, name, password } = req.body
+        const existingUser = await userModel.findOne({ $or: [{ id_number }, { email }] }) // Validar si el usuario ya existe
         if (!existingUser) {
-            if (req.files?.imagen) { // Subir avatar de usuario
+            if (req.files?.image) { // Subir avatar de usuario
                 const result = await uploadAvatar(req, user)
                 user.setAvatar({ public_id: result.public_id, secure_url: result.secure_url })
             }
             await user.save()
-            if (user.rol === 2) { // Si es un usuario interno (2), enviar email con credenciales
+            if (user.role === 2) { // Si es un usuario interno (2), enviar email con credenciales
                 try {
-                    transporter.sendMail(newUserOptions(email, nombres, password))
+                    transporter.sendMail(newUserOptions(email, name, password))
                 } catch (error) {
                     console.log("Error enviando email: " + error)
                 }
                 return res.status(200).send({ status: "ok", msg: "Usuario creado con éxito!!!", user });
             } else { // Si es usuario externo (3)
-                const newUser = await userModel.findOne({ nro_doc });
+                const newUser = await userModel.findOne({ id_number });
                 return res.status(200).send({ status: "ok", msg: "Su cuenta fue creada con éxito. Ya puede iniciar sesión!!!", user: newUser });
             }
         } else {
-            if (user.rol === 2) {
+            if (user.role === 2) {
                 return res.send({ status: "error", msg: "Ya existe un Usuario inactivo con ese Número de Documento o Email, en la Base de Datos!!!" });
             }
             return res.send({ status: "error", msg: "Ya existe una cuenta inactiva con ese Número de Documento o Email!!!" });
@@ -84,17 +85,17 @@ exports.updateUser = async (req, res) => {
     try {
         const data = req.body;
         const _id = req.params._id;
-        const { rol } = getPayload(req.headers.authorization);
+        const { role } = getPayload(req.headers.authorization);
         const foundUser = await userModel.findOne({ _id }); // Buscar usuario a editar
-        if (req.files?.imagen) { // Editar avatar de usuario
+        if (req.files?.image) { // Editar avatar de usuario
             const result = await uploadAvatar(req, foundUser)
             data.avatar = { public_id: result.public_id, secure_url: result.secure_url }
         } else { // Eliminar avatar de usuario
             data.avatar = await deleteAvatar(data, foundUser);
         }
         await userModel.updateOne({ _id }, { $set: data });
-        const msg = rol === 1 ? "Usuario actualizado con éxito!!!" : "Perfil actualizado con éxito!!!";
-        const users = await userModel.find({ estado: 1 }); // Obtener usuarios actualizados
+        const msg = role === 1 ? "Usuario actualizado con éxito!!!" : "Perfil actualizado con éxito!!!";
+        const users = await userModel.find({ active: true }); // Obtener usuarios actualizados
         return res.status(200).send({ status: "ok", msg, users });
     } catch (error) {
         console.log("Error editando usuario: " + error)
@@ -107,9 +108,9 @@ exports.updateUserPredioFields = (user) => {
     try {
         user.updateOne({
             $set: {
-                created_predios: user.created_predios,
-                edited_predios: user.edited_predios,
-                deleted_predios: user.deleted_predios
+                created_properties: user.created_properties,
+                edited_properties: user.edited_properties,
+                deleted_properties: user.deleted_properties
             }
         }, (error) => {
             if (error) console.log("Error actualizando campos de Actividad de Predios: " + error)
@@ -128,7 +129,7 @@ exports.deleteUser = async (req, res) => {
         if (user.avatar.public_id) {
             await deleteImage(user.avatar.public_id) // Eliminar imágen de Cloudinary
         }
-        await userModel.updateOne({ _id }, { $set: { estado: null, avatar: "" } }) // Usuario inactivo (estado: null)
+        await userModel.updateOne({ _id }, { $set: { active: false, avatar: "" } }) // Usuario inactivo (active: false)
         return res.status(200).send({ status: "ok", msg: "Usuario eliminado con éxito!!!" });
     } catch (error) {
         console.log("Error eliminando usuario: " + error)
@@ -140,8 +141,8 @@ exports.deleteUser = async (req, res) => {
 exports.changePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body
-        const { nro_doc } = getPayload(req.headers.authorization)
-        const user = await userModel.findOne({ nro_doc }) // Buscar usuario a actualizar
+        const { id_number } = getPayload(req.headers.authorization)
+        const user = await userModel.findOne({ id_number }) // Buscar usuario a actualizar
         const passOK = await compare(currentPassword, user.password) // Validar password actual
         if (passOK) {
             user.password = newPassword
@@ -172,8 +173,8 @@ exports.getResetLink = async (req, res) => {
                     expire_token: Date.now() + 3600000 // (Hora actual + 1h)
                 }
             })
-        const { nombres } = user
-        transporter.sendMail(resetPasswordOptions(email, nombres, resetToken)) // Enviar one-time-link al "email" del usuario
+        const { name } = user
+        transporter.sendMail(resetPasswordOptions(email, name, resetToken)) // Enviar one-time-link al "email" del usuario
         return res.status(200).send({ status: "ok", msg: "Por favor, revise su correo!!!" })
     } catch (error) {
         console.log("Error enviando one-time-link: " + error)
@@ -204,14 +205,14 @@ exports.resetPassword = async (req, res) => {
 exports.associatePredio = async (req, res) => {
     try {
         const user_id = req.params._id;
-        const { predio_id } = req.body;
-        const predioToAssociate = await predioModel.findOne({ _id: predio_id });
+        const { property_id } = req.body;
+        const predioToAssociate = await predioModel.findOne({ _id: property_id });
         if (!predioToAssociate.asociado) {
             await userModel.updateOne({ _id: user_id },
                 {
-                    $push: { predios: predio_id }
+                    $push: { user_properties: property_id }
                 });
-            await predioModel.updateOne({ _id: predio_id },
+            await predioModel.updateOne({ _id: property_id },
                 {
                     $set: { 
                         asociado: true,
@@ -219,7 +220,7 @@ exports.associatePredio = async (req, res) => {
                     }
                 }
             );
-            const associatedPredio = await predioModel.findOne({ _id: predio_id });
+            const associatedPredio = await predioModel.findOne({ _id: property_id });
             res.send({ status: "ok", msg: "Predio asociado con éxito!!!", associatedPredio });
         } else {
             res.send({ status: "error", msg: "El predio ya fue asociado!!!" });

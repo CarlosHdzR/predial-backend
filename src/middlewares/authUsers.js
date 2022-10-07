@@ -9,7 +9,7 @@ exports.authUsers = (req, res, next) => {
         }
         const token = authorization.split(' ')[1] // Capturar el token
         const payload = verify(token, process.env.JWT_SECRET_KEY) // Obtener carga útil
-        if (payload.rol !== 1 && payload._id !== _id) { // Verificar rol del usuario y si va a editar sus propios datos
+        if (payload.role !== 1 && payload._id !== _id) { // Verificar rol del usuario y si va a editar sus propios datos
             return res.send({ status: "error", msg: "No estás autorizado para realizar esta acción!!!" });
         }
     } catch (error) {
