@@ -14,6 +14,6 @@ propertyRoutes.post("/create", authPredios, createPredio)
 propertyRoutes.put("/edit/:_id", authPredios, updatePredio)
 propertyRoutes.delete("/delete/:_id", authPredios, deletePredio)
 propertyRoutes.get("/find/:owner_id_number", findPrediosByDoc)
-propertyRoutes.get("/list-associated-predios/:user_id", getAssociatedPredios)
+propertyRoutes.get("/list-associated-properties/:user_id", getAssociatedPredios)
 
 exports.propertyRoutes = propertyRoutes;

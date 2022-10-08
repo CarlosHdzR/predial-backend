@@ -10,6 +10,6 @@ router.get('/', (req, res) => {
 })
 
 router.use("/users", userRoutes);
-router.use("/predios", propertyRoutes);
+router.use("/properties", propertyRoutes);
 
 exports.router = router;
