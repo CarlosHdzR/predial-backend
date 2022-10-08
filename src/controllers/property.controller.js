@@ -1,4 +1,4 @@
-const { propertyModel } = require('../models/predio.model');
+const { propertyModel } = require('../models/property.model');
 const { userModel } = require('../models/user.model');
 const { transporter } = require('../utils/mailer');
 const { newPredioOptions } = require('../utils/emailOptions');

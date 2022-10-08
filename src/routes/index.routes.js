@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { userRoutes } = require('./user.routes');
-const { predioRoutes } = require('./predio.routes');
+const { propertyRoutes } = require('./property.routes');
 
 const router = Router();
 
@@ -10,6 +10,6 @@ router.get('/', (req, res) => {
 })
 
 router.use("/users", userRoutes);
-router.use("/predios", predioRoutes);
+router.use("/predios", propertyRoutes);
 
 exports.router = router;

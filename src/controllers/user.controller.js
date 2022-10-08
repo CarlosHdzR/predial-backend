@@ -1,4 +1,5 @@
 const { userModel } = require('../models/user.model');
+const { propertyModel } = require('../models/property.model');
 const { compare } = require('bcryptjs');
 const { transporter } = require('../utils/mailer');
 const { newUserOptions, resetPasswordOptions } = require('../utils/emailOptions');
@@ -7,7 +8,6 @@ const { getPayload } = require('../utils/getPayload');
 const { deleteImage } = require('../utils/cloudinary');
 const crypto = require('crypto');
 const { uploadAvatar, deleteAvatar } = require('./avatar.controller');
-const { propertyModel } = require('../models/predio.model');
 
 // Iniciar sesión:
 exports.login = async (req, res) => {
