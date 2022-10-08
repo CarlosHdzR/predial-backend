@@ -1,4 +1,4 @@
-const { predioModel } = require('../models/predio.model');
+const { propertyModel } = require('../models/predio.model');
 const { userModel } = require('../models/user.model');
 const { transporter } = require('../utils/mailer');
 const { newPredioOptions } = require('../utils/emailOptions');
@@ -9,7 +9,7 @@ const { updateUserPredioFields } = require('./user.controller');
 // Listar predios:
 exports.getPredios = async (req, res) => {
     try {
-        const predios = await predioModel.find({ estado: 1 }) //Predios activos (estado: 1)
+        const predios = await propertyModel.find({ active: true }) //Predios activos (active: true)
         if (predios !== null) {
             return res.status(200).send({ status: "ok", msg: "Predios visualizados!!!", predios });
         } else {
@@ -23,17 +23,17 @@ exports.getPredios = async (req, res) => {
 // Guardar predios:
 exports.createPredio = async (req, res) => {
     try {
-        const predio = await new predioModel(req.body)
-        const { email_prop, nom_prop, codigo, doc_prop, direccion_predio } = req.body
+        const predio = await new propertyModel(req.body)
+        const { owner_email, owner_name, code, owner_id_number, property_address } = req.body
         const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está creando el predio
-        const existingPredio = await predioModel.findOne({ $or: [{ codigo }, { direccion_predio }] })
+        const existingPredio = await propertyModel.findOne({ $or: [{ code }, { property_address }] })
         if (!existingPredio) {
             await predio.save()
-            transporter.sendMail(newPredioOptions(email_prop, nom_prop, codigo, doc_prop)) // Enviar email al propietario del predio
+            transporter.sendMail(newPredioOptions(owner_email, owner_name, code, owner_id_number)) // Enviar email al propietario del predio
             const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que creó el predio
             loggedUser.created_properties += 1
             const user = updateUserPredioFields(loggedUser) // Actualizar campo "created_properties"
-            const historial = createHistorial(loggedUser, "creó", codigo)
+            const historial = createHistorial(loggedUser, "creó", code)
             return res.status(200).send({ status: "ok", msg: "Predio creado con exito!!!", predio, user, historial });
         } else {
             return res.send({ status: "error", msg: "Ya existe un Predio inactivo con ese Código o Dirección, en la Base de Datos!!!" });
@@ -47,16 +47,16 @@ exports.createPredio = async (req, res) => {
 // Editar predios:
 exports.updatePredio = async (req, res) => {
     try {
-        const { codigo } = req.body
+        const { code } = req.body
         const _id = req.params._id
         const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está editando el predio  
-        await predioModel.updateOne({ _id }, { $set: req.body })
+        await propertyModel.updateOne({ _id }, { $set: req.body })
         const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que editó el predio
         loggedUser.edited_properties += 1
         updateUserPredioFields(loggedUser) // Actualizar campo "edited_properties"
-        const historial = createHistorial(loggedUser, "editó", codigo)
-        const users = await userModel.find({ estado: 1 }) // Obtener usuarios actualizados
-        const predios = await predioModel.find({ estado: 1 }) // Obtener predios actualizados
+        const historial = createHistorial(loggedUser, "editó", code)
+        const users = await userModel.find({ active: true }) // Obtener usuarios actualizados
+        const predios = await propertyModel.find({ active: true }) // Obtener predios actualizados
         return res.status(200).send({ status: "ok", msg: "Predio actualizado con exito!!!", predios, users, historial });
     } catch (error) {
         console.log("Error editando predio: " + error)
@@ -68,13 +68,13 @@ exports.updatePredio = async (req, res) => {
 exports.deletePredio = async (req, res) => {
     try {
         const _id = req.params._id
-        const predio = await predioModel.findOne({ _id }) // Buscar predio a eliminar
+        const predio = await propertyModel.findOne({ _id }) // Buscar predio a eliminar
         const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está eliminando el predio 
-        await predioModel.updateOne({ _id }, { $set: { estado: null } }) // Predio inactivo (estado: null)
+        await propertyModel.updateOne({ _id }, { $set: { active: false } }) // Predio inactivo (active: false)
         const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que eliminó el predio
         loggedUser.deleted_properties += 1
         const user = updateUserPredioFields(loggedUser) // Actualizar campo "deleted_properties"
-        const historial = createHistorial(loggedUser, "eliminó", predio.codigo)
+        const historial = createHistorial(loggedUser, "eliminó", predio.code)
         return res.status(200).send({ status: "ok", msg: "Predio eliminado con exito!!!", user, historial });
     } catch (error) {
         console.log("Error eliminando predio: " + error)
@@ -85,8 +85,8 @@ exports.deletePredio = async (req, res) => {
 // Consultar predios por Documento del Propietario:
 exports.findPrediosByDoc = async (req, res) => {
     try {
-        const doc_prop = req.params.doc_prop
-        const predios = await predioModel.find({ doc_prop })
+        const { owner_id_number } = req.params
+        const predios = await propertyModel.find({ owner_id_number, active: true })
         if (predios !== null) {
             return res.send({ status: "ok", msg: "Predios Encontrados", data: predios });
         } else {
@@ -102,7 +102,7 @@ exports.findPrediosByDoc = async (req, res) => {
 exports.getAssociatedPredios = async (req, res) => {
     try {
         const { user_id } = req.params;
-        const associatedPredios = await predioModel.find({ owner: user_id })
+        const associatedPredios = await propertyModel.find({ owner: user_id, active: true })
         if (associatedPredios !== null && associatedPredios.length > 0) {
             return res.status(200).send({ status: "ok", msg: "Predios visualizados!!!", associatedPredios });
         }

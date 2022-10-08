@@ -7,7 +7,7 @@ const { getPayload } = require('../utils/getPayload');
 const { deleteImage } = require('../utils/cloudinary');
 const crypto = require('crypto');
 const { uploadAvatar, deleteAvatar } = require('./avatar.controller');
-const { predioModel } = require('../models/predio.model');
+const { propertyModel } = require('../models/predio.model');
 
 // Iniciar sesión:
 exports.login = async (req, res) => {
@@ -20,7 +20,6 @@ exports.login = async (req, res) => {
         const passOK = await compare(password, user.password) // Validar contraseña
         if (passOK) {
             const token = generateAuthToken(user);
-            console.log(user);
             return res.status(200).send({ status: "ok", user, token });
         } else {
             return res.send({ status: "error", msg: "Credenciales NO válidas. Intentelo de nuevo!!!" });
@@ -206,21 +205,21 @@ exports.associatePredio = async (req, res) => {
     try {
         const user_id = req.params._id;
         const { property_id } = req.body;
-        const predioToAssociate = await predioModel.findOne({ _id: property_id });
-        if (!predioToAssociate.asociado) {
+        const predioToAssociate = await propertyModel.findOne({ _id: property_id });
+        if (!predioToAssociate.associated) {
             await userModel.updateOne({ _id: user_id },
                 {
                     $push: { user_properties: property_id }
                 });
-            await predioModel.updateOne({ _id: property_id },
+            await propertyModel.updateOne({ _id: property_id },
                 {
                     $set: { 
-                        asociado: true,
+                        associated: true,
                         owner: user_id
                     }
                 }
             );
-            const associatedPredio = await predioModel.findOne({ _id: property_id });
+            const associatedPredio = await propertyModel.findOne({ _id: property_id });
             res.send({ status: "ok", msg: "Predio asociado con éxito!!!", associatedPredio });
         } else {
             res.send({ status: "error", msg: "El predio ya fue asociado!!!" });

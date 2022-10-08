@@ -68,9 +68,9 @@ const userSchema = new Schema({
     user_properties: [
         {
             type: Schema.Types.ObjectId,
-            ref: 'predios',
+            ref: 'properties',
             autopopulate: {
-                select: ['codigo', 'direccion_predio', 'valor_predio', 'valor_predial']
+                select: ['code', 'property_address', 'property_value', 'tax_value']
             }
         }
     ]

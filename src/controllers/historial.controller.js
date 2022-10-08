@@ -15,13 +15,13 @@ exports.getHistorial = async (req, res) => {
 }
 
 // Crear historial de actividad de predios:
-exports.createHistorial = (user, action, codigo) => {
+exports.createHistorial = (user, action, code) => {
     try {
         const historial = new historialModel()
         historial.author = user.name
         historial.action = action
         historial.fecha = Date.now()
-        historial.code = codigo
+        historial.code = code
         historial.save()
         return historial;
     } catch (error) {

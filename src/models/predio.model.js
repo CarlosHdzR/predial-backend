@@ -1,72 +1,76 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const predioSchema = new Schema({
-    codigo: {
+const propertySchema = new Schema({
+    code: {
         type: String,
         required: true,
         unique: true
     },
-    nom_prop: {
+    owner_name: {
         type: String,
         required: true
     },
-    doc_prop: {
+    owner_id_number: {
         type: Number,
         required: true
     },
-    email_prop: {
+    owner_email: {
         type: String,
         required: true
     },
-    area_c: {
+    built_area: {
         type: String,
         required: true
     },
-    area_t: {
+    total_area: {
         type: String,
         required: true
     },
-    direccion_predio: {
+    property_address: {
         type: String,
         required: true,
         unique: true
     },
-    barrio: {
+    neighborhood: {
         type: String,
         required: true
     },
-    fecha_pago: {
+    payment_date_1: {
         type: String
     },
-    fecha_pago2: {
+    payment_date_2: {
         type: String
     },
-    fecha_pago3: {
+    payment_date_3: {
         type: String
     },
-    valor_predio: {
+    property_value: {
         type: String,
         required: true
     },
-    valor_predial: {
+    tax_value: {
         type: String
     },
-    estado: {
-        type: Number,
-        default: 1,
+    tax_paid: {
+        type: Boolean,
+        default: false,
         required: true
     },
-    asociado: {
+    active: {
+        type: Boolean,
+        default: true,
+        required: true
+    },
+    associated: {
         type: Boolean,
         default: false,
         required: true
     },
     owner: {
         type: Schema.Types.ObjectId,
-        default: [],
         ref: 'users',
-    }
+    },
 })
 
-exports.predioModel = mongoose.model("predios", predioSchema);
+exports.propertyModel = mongoose.model("properties", propertySchema);

@@ -26,14 +26,14 @@ exports.newUserOptions = (email, name, password) => {
     };
 }
 
-exports.newPredioOptions = (email, name, codigo, documento) => {
+exports.newPredioOptions = (email, name, code, owner_id_number) => {
     return {
         from: `NO-REPLY <${USER}>`,
         to: email,
         subject: "PREDIO CREADO ✔",
         html: `<p>Sr(a). <b>${name}</b>,</p>
 
-        <p>Se ha creado un predio con código <b>${codigo}</b> asociado a su número de documento <b>${documento}</b>.</p>
+        <p>Se ha creado un predio con código <b>${code}</b> asociado a su número de documento <b>${owner_id_number}</b>.</p>
 
         <p>Ya puede ingresar a la <b>Plataforma de Gestión Catastral</b> para asociar dicho predio a su cuenta y así poder
         realizar el pago del <b>Impuesto Predial</b>.</p>               
