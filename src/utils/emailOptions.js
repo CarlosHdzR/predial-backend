@@ -26,7 +26,7 @@ exports.newUserOptions = (email, name, password) => {
     };
 }
 
-exports.newPredioOptions = (email, name, code, owner_id_number) => {
+exports.newPropertyOptions = (email, name, code, owner_id_number) => {
     return {
         from: `NO-REPLY <${USER}>`,
         to: email,

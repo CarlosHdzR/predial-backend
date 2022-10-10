@@ -76,7 +76,7 @@ const userSchema = new Schema({
     ]
 })
 
-// Autopoblar el campo "predios"
+// Autopoblar el campo "user_properties"
 userSchema.plugin(require('mongoose-autopopulate'));
 
 // Setear valores del campo "avatar"

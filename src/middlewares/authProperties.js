@@ -1,6 +1,6 @@
 const { verify } = require('jsonwebtoken');
 
-exports.authPredios = (req, res, next) => {
+exports.authProperties = (req, res, next) => {
     try {
         const authorization = req.headers.authorization
         if (!authorization) { // Validar si hay token

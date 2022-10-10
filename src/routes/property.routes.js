@@ -1,19 +1,19 @@
 const { Router } = require('express');
 const {
-    getPredios, createPredio, updatePredio,
-    deletePredio, findPrediosByDoc, getAssociatedPredios
+    getProperties, createProperty, updateProperty, deleteProperty,
+    findPropertiesByOwnerId, getAssociatedProperties
 } = require('../controllers/property.controller');
 const { getHistorial } = require('../controllers/historial.controller');
-const { authPredios } = require('../middlewares/authProperties');
+const { authProperties } = require('../middlewares/authProperties');
 
 const propertyRoutes = Router()
 
-propertyRoutes.get("/list", getPredios)
+propertyRoutes.get("/list", getProperties)
 propertyRoutes.get("/historial", getHistorial)
-propertyRoutes.post("/create", authPredios, createPredio)
-propertyRoutes.put("/edit/:_id", authPredios, updatePredio)
-propertyRoutes.delete("/delete/:_id", authPredios, deletePredio)
-propertyRoutes.get("/find/:owner_id_number", findPrediosByDoc)
-propertyRoutes.get("/list-associated-properties/:user_id", getAssociatedPredios)
+propertyRoutes.post("/create", authProperties, createProperty)
+propertyRoutes.put("/edit/:_id", authProperties, updateProperty)
+propertyRoutes.delete("/delete/:_id", authProperties, deleteProperty)
+propertyRoutes.get("/find/:owner_id_number", findPropertiesByOwnerId)
+propertyRoutes.get("/list-associated-properties/:user_id", getAssociatedProperties)
 
 exports.propertyRoutes = propertyRoutes;

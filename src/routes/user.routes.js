@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const {
-    login, getUsers, createUser, updateUser,
-    deleteUser, changePassword, getResetLink, resetPassword, associatePredio
+    login, getUsers, createUser, updateUser, deleteUser,
+    changePassword, getResetLink, resetPassword, associateProperty
 } = require('../controllers/user.controller');
 const { authUsers } = require('../middlewares/authUsers');
 const { upload } = require('../middlewares/fileUpload');
@@ -17,6 +17,6 @@ userRoutes.delete("/delete/:_id", authUsers, upload, deleteUser)
 userRoutes.post("/change-password", changePassword)
 userRoutes.post("/get-reset-link", getResetLink)
 userRoutes.post("/reset-password", resetPassword)
-userRoutes.put("/associate-predio/:_id", associatePredio)
+userRoutes.put("/associate-property/:_id", associateProperty)
 
 exports.userRoutes = userRoutes;
