@@ -70,7 +70,7 @@ const userSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'properties',
             autopopulate: {
-                select: ['code', 'property_address', 'property_value', 'tax_value']
+                select: ['code', 'address', 'value', 'tax_value']
             }
         }
     ]

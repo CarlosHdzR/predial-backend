@@ -27,7 +27,7 @@ const propertySchema = new Schema({
         type: String,
         required: true
     },
-    property_address: {
+    address: {
         type: String,
         required: true,
         unique: true
@@ -45,7 +45,7 @@ const propertySchema = new Schema({
     payment_date_3: {
         type: String
     },
-    property_value: {
+    value: {
         type: String,
         required: true
     },

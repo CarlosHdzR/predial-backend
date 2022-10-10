@@ -24,9 +24,9 @@ exports.getProperties = async (req, res) => {
 exports.createProperty = async (req, res) => {
     try {
         const property = await new propertyModel(req.body)
-        const { owner_email, owner_name, code, owner_id_number, property_address } = req.body
+        const { owner_email, owner_name, code, owner_id_number, address } = req.body
         const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está creando el predio
-        const existingProperty = await propertyModel.findOne({ $or: [{ code }, { property_address }] })
+        const existingProperty = await propertyModel.findOne({ $or: [{ code }, { address }] })
         if (!existingProperty) {
             await property.save()
             transporter.sendMail(newPropertyOptions(owner_email, owner_name, code, owner_id_number)) // Enviar email al propietario del predio
