@@ -47,10 +47,10 @@ exports.createProperty = async (req, res) => {
 // Editar predios:
 exports.updateProperty = async (req, res) => {
     try {
+        const { property_id } = req.params
         const { code } = req.body
-        const _id = req.params._id
         const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está editando el predio  
-        await propertyModel.updateOne({ _id }, { $set: req.body })
+        await propertyModel.updateOne({ _id: property_id }, { $set: req.body })
         const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que editó el predio
         loggedUser.edited_properties += 1
         updateUserPredioFields(loggedUser) // Actualizar campo "edited_properties"
@@ -67,10 +67,10 @@ exports.updateProperty = async (req, res) => {
 // Eliminar predios:
 exports.deleteProperty = async (req, res) => {
     try {
-        const _id = req.params._id
-        const property = await propertyModel.findOne({ _id }) // Buscar predio a eliminar
+        const { property_id } = req.params
+        const property = await propertyModel.findOne({ _id: property_id }) // Buscar predio a eliminar
         const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está eliminando el predio 
-        await propertyModel.updateOne({ _id }, { $set: { active: false } }) // Predio inactivo (active: false)
+        await propertyModel.updateOne({ _id: property_id }, { $set: { active: false } }) // Predio inactivo (active: false)
         const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que eliminó el predio
         loggedUser.deleted_properties += 1
         const user = updateUserPredioFields(loggedUser) // Actualizar campo "deleted_properties"
@@ -90,10 +90,10 @@ exports.findPropertiesByOwnerId = async (req, res) => {
         if (foundProperties !== null && foundProperties.length > 0) {
             return res.send({ status: "ok", msg: "Predios Encontrados", foundProperties });
         }
-        return res.send({ status: "ok", msg: "No se encontraron resultados para el documento"});
+        return res.send({ status: "ok", msg: "No se encontraron resultados para el documento" });
     } catch (error) {
         console.log("Error consultando predios: " + error)
-        return res.send({ status: "error", msg: "DB ERROR. Inténtelo más tarde."});
+        return res.send({ status: "error", msg: "DB ERROR. Inténtelo más tarde." });
     }
 }
 

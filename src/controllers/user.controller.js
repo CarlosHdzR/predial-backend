@@ -83,16 +83,16 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
     try {
         const data = req.body;
-        const _id = req.params._id;
+        const { user_id } = req.params;
         const { role } = getPayload(req.headers.authorization);
-        const foundUser = await userModel.findOne({ _id }); // Buscar usuario a editar
+        const foundUser = await userModel.findOne({ _id: user_id }); // Buscar usuario a editar
         if (req.files?.image) { // Editar avatar de usuario
             const result = await uploadAvatar(req, foundUser)
             data.avatar = { public_id: result.public_id, secure_url: result.secure_url }
         } else { // Eliminar avatar de usuario
             data.avatar = await deleteAvatar(data, foundUser);
         }
-        await userModel.updateOne({ _id }, { $set: data });
+        await userModel.updateOne({ _id: user_id }, { $set: data });
         const msg = role === 1 ? "Usuario actualizado con éxito!!!" : "Perfil actualizado con éxito!!!";
         const users = await userModel.find({ active: true }); // Obtener usuarios actualizados
         return res.status(200).send({ status: "ok", msg, users });
@@ -123,12 +123,12 @@ exports.updateUserPredioFields = (user) => {
 // Eliminar usuario:
 exports.deleteUser = async (req, res) => {
     try {
-        const _id = req.params._id
-        const user = await userModel.findOne({ _id }) // Buscar usuario a eliminar
+        const { user_id } = req.params
+        const user = await userModel.findOne({ _id: user_id }) // Buscar usuario a eliminar
         if (user.avatar.public_id) {
             await deleteImage(user.avatar.public_id) // Eliminar imágen de Cloudinary
         }
-        await userModel.updateOne({ _id }, { $set: { active: false, avatar: "" } }) // Usuario inactivo (active: false)
+        await userModel.updateOne({ _id: user_id }, { $set: { active: false, avatar: "" } }) // Usuario inactivo (active: false)
         return res.status(200).send({ status: "ok", msg: "Usuario eliminado con éxito!!!" });
     } catch (error) {
         console.log("Error eliminando usuario: " + error)
@@ -140,8 +140,8 @@ exports.deleteUser = async (req, res) => {
 exports.changePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body
-        const { id_number } = getPayload(req.headers.authorization)
-        const user = await userModel.findOne({ id_number }) // Buscar usuario a actualizar
+        const { _id } = getPayload(req.headers.authorization)
+        const user = await userModel.findOne({ _id }) // Buscar usuario a actualizar
         const passOK = await compare(currentPassword, user.password) // Validar password actual
         if (passOK) {
             user.password = newPassword
@@ -203,7 +203,7 @@ exports.resetPassword = async (req, res) => {
 // Asociar predios a usuario:
 exports.associateProperty = async (req, res) => {
     try {
-        const user_id = req.params._id;
+        const { user_id } = req.params;
         const { property_id } = req.body;
         const propertyToAssociate = await propertyModel.findOne({ _id: property_id });
         if (!propertyToAssociate.associated) {
@@ -213,7 +213,7 @@ exports.associateProperty = async (req, res) => {
                 });
             await propertyModel.updateOne({ _id: property_id },
                 {
-                    $set: { 
+                    $set: {
                         associated: true,
                         owner: user_id
                     }
