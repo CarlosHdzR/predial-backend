@@ -3,7 +3,7 @@ const { userModel } = require('../models/user.model');
 const { transporter } = require('../utils/mailer');
 const { newPropertyOptions } = require('../utils/emailOptions');
 const { getPayload } = require('../utils/getPayload');
-const { createHistorial } = require('./historial.controller');
+const { createRecord } = require('./record.controller');
 const { updateUserPredioFields } = require('./user.controller');
 
 // Listar predios:
@@ -25,16 +25,13 @@ exports.createProperty = async (req, res) => {
     try {
         const property = await new propertyModel(req.body)
         const { owner_email, owner_name, code, owner_id_number, address } = req.body
-        const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está creando el predio
+        const user_id = getPayload(req.headers.authorization)._id; // Extraer "_id" del usuario que está creando el predio
         const existingProperty = await propertyModel.findOne({ $or: [{ code }, { address }] })
         if (!existingProperty) {
             await property.save()
             transporter.sendMail(newPropertyOptions(owner_email, owner_name, code, owner_id_number)) // Enviar email al propietario del predio
-            const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que creó el predio
-            loggedUser.created_properties += 1
-            const user = updateUserPredioFields(loggedUser) // Actualizar campo "created_properties"
-            const historial = createHistorial(loggedUser, "creó", code)
-            return res.status(200).send({ status: "ok", msg: "Predio creado con exito!!!", property, user, historial });
+            const record = await createRecord(user_id, "creó", code);
+            return res.status(200).send({ status: "ok", msg: "Predio creado con exito!!!", property, record });
         } else {
             return res.send({ status: "error", msg: "Ya existe un Predio inactivo con ese Código o Dirección, en la Base de Datos!!!" });
         }
@@ -49,15 +46,11 @@ exports.updateProperty = async (req, res) => {
     try {
         const { property_id } = req.params
         const { code } = req.body
-        const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está editando el predio  
+        const user_id = getPayload(req.headers.authorization)._id // Extraer "_id" del usuario que está editando el predio  
         await propertyModel.updateOne({ _id: property_id }, { $set: req.body })
-        const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que editó el predio
-        loggedUser.edited_properties += 1
-        updateUserPredioFields(loggedUser) // Actualizar campo "edited_properties"
-        const historial = createHistorial(loggedUser, "editó", code)
-        const users = await userModel.find({ active: true }) // Obtener usuarios actualizados
         const properties = await propertyModel.find({ active: true }) // Obtener predios actualizados
-        return res.status(200).send({ status: "ok", msg: "Predio actualizado con exito!!!", properties, users, historial });
+        const record = await createRecord(user_id, "editó", code);
+        return res.status(200).send({ status: "ok", msg: "Predio actualizado con exito!!!", properties, record });
     } catch (error) {
         console.log("Error editando predio: " + error)
         return res.send({ status: "error", msg: "El predio no pudo ser actualizado!!!" });
@@ -69,13 +62,10 @@ exports.deleteProperty = async (req, res) => {
     try {
         const { property_id } = req.params
         const property = await propertyModel.findOne({ _id: property_id }) // Buscar predio a eliminar
-        const { id_number } = getPayload(req.headers.authorization) // Extraer "id_number" del usuario que está eliminando el predio 
+        const user_id = getPayload(req.headers.authorization)._id; // Extraer "id_number" del usuario que está eliminando el predio 
         await propertyModel.updateOne({ _id: property_id }, { $set: { active: false } }) // Predio inactivo (active: false)
-        const loggedUser = await userModel.findOne({ id_number }) // Buscar usuario que eliminó el predio
-        loggedUser.deleted_properties += 1
-        const user = updateUserPredioFields(loggedUser) // Actualizar campo "deleted_properties"
-        const historial = createHistorial(loggedUser, "eliminó", property.code)
-        return res.status(200).send({ status: "ok", msg: "Predio eliminado con exito!!!", user, historial });
+        const record = await createRecord(user_id, "eliminó", property.code);
+        return res.status(200).send({ status: "ok", msg: "Predio eliminado con exito!!!", record });
     } catch (error) {
         console.log("Error eliminando predio: " + error)
         return res.send({ status: "error", msg: "El predio no pudo ser eliminado!!!" });
