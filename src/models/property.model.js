@@ -63,11 +63,6 @@ const propertySchema = new Schema(
             default: true,
             required: true
         },
-        associated: {
-            type: Boolean,
-            default: false,
-            required: true
-        },
         owner: {
             type: Schema.Types.ObjectId,
             ref: 'users',

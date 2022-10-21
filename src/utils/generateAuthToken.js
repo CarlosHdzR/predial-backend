@@ -7,7 +7,6 @@ exports.generateAuthToken = (user) => {
             _id: user._id,
             role: user.role,
             id_number: user.id_number,
-            path: user.role === 3 ? "/user-ext/home" : "/admin/dashboard"
         },
         config.JWT_SECRET_KEY,
         { expiresIn: '6h' }

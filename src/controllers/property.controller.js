@@ -1,10 +1,8 @@
 const { propertyModel } = require('../models/property.model');
-const { userModel } = require('../models/user.model');
 const { transporter } = require('../utils/mailer');
 const { newPropertyOptions } = require('../utils/emailOptions');
 const { getPayload } = require('../utils/getPayload');
 const { createRecord } = require('./record.controller');
-const { updateUserPredioFields } = require('./user.controller');
 
 // Listar predios:
 exports.getProperties = async (req, res) => {
@@ -80,10 +78,10 @@ exports.findPropertiesByOwnerId = async (req, res) => {
         if (foundProperties !== null && foundProperties.length > 0) {
             return res.send({ status: "ok", msg: "Predios Encontrados", foundProperties });
         }
-        return res.send({ status: "ok", msg: "No se encontraron resultados para el documento" });
+        return res.send({ status: "ok", msg: "No se encontraron resultados para el documento", foundProperties: [] });
     } catch (error) {
         console.log("Error consultando predios: " + error)
-        return res.send({ status: "error", msg: "DB ERROR. Inténtelo más tarde." });
+        return res.send({ status: "error", msg: "Server error" });
     }
 }
 

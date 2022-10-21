@@ -2,7 +2,7 @@ const { verify } = require('jsonwebtoken');
 
 exports.authUsers = (req, res, next) => {
     try {
-        const _id = req.params._id // Capturar el "_id" del usuario, si va a editar
+        const _id = req.params.user_id // Capturar el "_id" del usuario, si va a editar
         const authorization = req.headers.authorization
         if (!authorization) { // Validar si hay token
             return res.send({ status: "error", msg: "NO AUTORIZADO" })

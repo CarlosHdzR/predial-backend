@@ -62,20 +62,20 @@ exports.createUser = async (req, res) => {
                 } catch (error) {
                     console.log("Error enviando email: " + error)
                 }
-                return res.status(200).send({ status: "ok", msg: "Usuario creado con éxito!!!", user });
+                return res.status(200).send({ msg: "Usuario creado con éxito!!!", user });
             } else { // Si es usuario externo (3)
                 const newUser = await userModel.findOne({ id_number });
-                return res.status(200).send({ status: "ok", msg: "Su cuenta fue creada con éxito. Ya puede iniciar sesión!!!", user: newUser });
+                return res.status(200).send({ msg: "Su cuenta fue creada con éxito. Ya puede iniciar sesión!!!", user: newUser });
             }
         } else {
             if (user.role === 2) {
-                return res.send({ status: "error", msg: "Ya existe un Usuario inactivo con ese Número de Documento o Email, en la Base de Datos!!!" });
+                return res.send({ msg: "Ya existe un Usuario inactivo con ese Número de Documento o Email, en la Base de Datos!!!", error: "Duplicated key" });
             }
-            return res.send({ status: "error", msg: "Ya existe una cuenta inactiva con ese Número de Documento o Email!!!" });
+            return res.send({ msg: "Ya existe una cuenta inactiva con ese Número de Documento o Email!!!", error: "Duplicated key" });
         }
     } catch (error) {
         console.log("Error creando usuario: " + error)
-        return res.send({ status: "error", msg: "El usuario no pudo ser creado!!!" });
+        return res.send({ msg: "El usuario no pudo ser creado!!!", error: error.message });
     }
 }
 
@@ -95,28 +95,10 @@ exports.updateUser = async (req, res) => {
         await userModel.updateOne({ _id: user_id }, { $set: data });
         const msg = role === 1 ? "Usuario actualizado con éxito!!!" : "Perfil actualizado con éxito!!!";
         const users = await userModel.find({ active: true }); // Obtener usuarios actualizados
-        return res.status(200).send({ status: "ok", msg, users });
+        return res.status(200).send({ msg, users });
     } catch (error) {
         console.log("Error editando usuario: " + error)
-        return res.send({ status: "error", msg: "El usuario no pudo ser actualizado!!!" });
-    }
-}
-
-// Actualizar campos de Actividad de Predios en usuario:
-exports.updateUserPredioFields = (user) => {
-    try {
-        user.updateOne({
-            $set: {
-                created_properties: user.created_properties,
-                edited_properties: user.edited_properties,
-                deleted_properties: user.deleted_properties
-            }
-        }, (error) => {
-            if (error) console.log("Error actualizando campos de Actividad de Predios: " + error)
-        })
-        return user;
-    } catch (error) {
-        console.log(error)
+        return res.send({ msg: "El usuario no pudo ser actualizado!!!", error: error.message });
     }
 }
 
@@ -129,10 +111,10 @@ exports.deleteUser = async (req, res) => {
             await deleteImage(user.avatar.public_id) // Eliminar imágen de Cloudinary
         }
         await userModel.updateOne({ _id: user_id }, { $set: { active: false, avatar: "" } }) // Usuario inactivo (active: false)
-        return res.status(200).send({ status: "ok", msg: "Usuario eliminado con éxito!!!" });
+        return res.status(200).send({ msg: "Usuario eliminado con éxito!!!" });
     } catch (error) {
         console.log("Error eliminando usuario: " + error)
-        return res.send({ status: "error", msg: "El usuario no pudo ser eliminado!!!" });
+        return res.send({ msg: "El usuario no pudo ser eliminado!!!", error: error.message });
     }
 }
 
@@ -146,13 +128,13 @@ exports.changePassword = async (req, res) => {
         if (passOK) {
             user.password = newPassword
             await user.save()
-            return res.status(200).send({ status: "ok", msg: "Contraseña actualizada con éxito. Por favor, inicie sesión nuevamente!!!" });
+            return res.status(200).send({ msg: "Contraseña actualizada con éxito. Por favor, inicie sesión nuevamente!!!" });
         } else {
-            return res.send({ status: "error", msg: "Ingrese correctamente su contraseña actual!!!" });
+            return res.send({ msg: "Ingrese correctamente su contraseña actual!!!", error: "Wrong password" });
         }
     } catch (error) {
         console.log("Error cambiando contraseña: " + error)
-        return res.send({ status: "error", msg: "No se pudo actualizar la contraseña!!!" });
+        return res.send({ msg: "No se pudo actualizar la contraseña!!!", error: error.message });
     }
 }
 
@@ -162,7 +144,7 @@ exports.getResetLink = async (req, res) => {
         const { email } = req.body;
         const user = await userModel.findOne({ email: email }) // Buscar usuario en la DB
         if (!user) {
-            return res.send({ status: "ok", msg: "Por favor, revise su correo!!!" })
+            return res.send({ msg: "Por favor, revise su correo!!!" })
         }
         const resetToken = crypto.randomBytes(32).toString('hex') // Generar token        
         await userModel.updateOne({ email },
@@ -174,10 +156,10 @@ exports.getResetLink = async (req, res) => {
             })
         const { name } = user
         transporter.sendMail(resetPasswordOptions(email, name, resetToken)) // Enviar one-time-link al "email" del usuario
-        return res.status(200).send({ status: "ok", msg: "Por favor, revise su correo!!!" })
+        return res.status(200).send({ msg: "Por favor, revise su correo!!!" })
     } catch (error) {
         console.log("Error enviando one-time-link: " + error)
-        res.send({ status: "error", msg: "Ocurrió un error. Por favor, intentelo de nuevo!!!" });
+        res.send({ msg: "Ocurrió un error. Por favor, intentelo de nuevo!!!", error: error.message });
     }
 }
 
@@ -187,16 +169,16 @@ exports.resetPassword = async (req, res) => {
         const { newPassword, sentToken } = req.body
         const user = await userModel.findOne({ reset_token: sentToken, expire_token: { $gt: Date.now() } }) // Validar "reset_token"
         if (!user) {
-            return res.send({ status: "error", msg: "El link que está utilizando para restablecer su contraseña caducó. Por favor, solicite uno nuevo!!!" })
+            return res.send({ msg: "El link que está utilizando para restablecer su contraseña caducó. Por favor, solicite uno nuevo!!!", error: "Link expired" })
         }
         user.password = newPassword
         user.reset_token = undefined
         user.expire_token = undefined
         await user.save()
-        res.status(200).send({ status: "ok", msg: "Contraseña restablecida con éxito. Ya puede iniciar sesión!!!" })
+        res.status(200).send({ msg: "Contraseña restablecida con éxito. Ya puede iniciar sesión!!!" })
     } catch (error) {
         console.log("Error restableciendo contraseña: " + error)
-        res.send({ status: "error", msg: "No se pudo actualizar la contraseña" });
+        res.send({ msg: "No se pudo actualizar la contraseña!!!", error: error.message });
     }
 }
 
@@ -205,27 +187,21 @@ exports.associateProperty = async (req, res) => {
     try {
         const { user_id } = req.params;
         const { property_id } = req.body;
-        const propertyToAssociate = await propertyModel.findOne({ _id: property_id });
-        if (!propertyToAssociate.associated) {
-            await userModel.updateOne({ _id: user_id },
-                {
-                    $push: { user_properties: property_id }
-                });
-            await propertyModel.updateOne({ _id: property_id },
-                {
-                    $set: {
-                        associated: true,
-                        owner: user_id
-                    }
+        await userModel.updateOne({ _id: user_id },
+            {
+                $push: { user_properties: property_id }
+            });
+        await propertyModel.updateOne({ _id: property_id },
+            {
+                $set: {
+                    owner: user_id
                 }
-            );
-            const associatedProperty = await propertyModel.findOne({ _id: property_id });
-            res.send({ status: "ok", msg: "Predio asociado con éxito!!!", associatedProperty });
-        } else {
-            res.send({ status: "error", msg: "El predio ya fue asociado!!!" });
-        }
+            }
+        );
+        const associatedProperty = await propertyModel.findOne({ _id: property_id });
+        res.send({ msg: "Predio asociado con éxito!!!", associatedProperty });
     } catch (error) {
         console.log("Error asociando predio: " + error)
-        res.send({ status: "error", msg: "No fue posible asociar el predio" });
+        res.send({ msg: "No fue posible asociar el predio!!!", error: error.message });
     }
 }
