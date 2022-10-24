@@ -29,13 +29,13 @@ exports.createProperty = async (req, res) => {
             await property.save()
             transporter.sendMail(newPropertyOptions(owner_email, owner_name, code, owner_id_number)) // Enviar email al propietario del predio
             const record = await createRecord(user_id, "creó", code);
-            return res.status(200).send({ status: "ok", msg: "Predio creado con exito!!!", property, record });
+            return res.status(200).send({ msg: "Predio creado con exito!!!", property, record });
         } else {
-            return res.send({ status: "error", msg: "Ya existe un Predio inactivo con ese Código o Dirección, en la Base de Datos!!!" });
+            return res.send({ msg: "Ya existe un Predio inactivo con ese Código o Dirección, en la Base de Datos!!!", error: "Duplicated key" });
         }
     } catch (error) {
         console.log("Error creando predio: " + error)
-        return res.send({ status: "error", msg: "El predio no pudo ser creado!!!" });
+        return res.send({ msg: "El predio no pudo ser creado!!!", error: error.message });
     }
 }
 
@@ -48,10 +48,10 @@ exports.updateProperty = async (req, res) => {
         await propertyModel.updateOne({ _id: property_id }, { $set: req.body })
         const properties = await propertyModel.find({ active: true }) // Obtener predios actualizados
         const record = await createRecord(user_id, "editó", code);
-        return res.status(200).send({ status: "ok", msg: "Predio actualizado con exito!!!", properties, record });
+        return res.status(200).send({ msg: "Predio actualizado con exito!!!", properties, record });
     } catch (error) {
         console.log("Error editando predio: " + error)
-        return res.send({ status: "error", msg: "El predio no pudo ser actualizado!!!" });
+        return res.send({ msg: "El predio no pudo ser actualizado!!!", error: error.message });
     }
 }
 
@@ -63,10 +63,10 @@ exports.deleteProperty = async (req, res) => {
         const user_id = getPayload(req.headers.authorization)._id; // Extraer "id_number" del usuario que está eliminando el predio 
         await propertyModel.updateOne({ _id: property_id }, { $set: { active: false } }) // Predio inactivo (active: false)
         const record = await createRecord(user_id, "eliminó", property.code);
-        return res.status(200).send({ status: "ok", msg: "Predio eliminado con exito!!!", record });
+        return res.status(200).send({ msg: "Predio eliminado con exito!!!", record });
     } catch (error) {
         console.log("Error eliminando predio: " + error)
-        return res.send({ status: "error", msg: "El predio no pudo ser eliminado!!!" });
+        return res.send({ msg: "El predio no pudo ser eliminado!!!", error: error.message });
     }
 }
 
