@@ -8,13 +8,13 @@ const { createRecord } = require('./record.controller');
 exports.getProperties = async (req, res) => {
     try {
         const properties = await propertyModel.find({ active: true })
-        if (properties !== null) {
-            return res.status(200).send({ status: "ok", msg: "Predios visualizados!!!", properties });
-        } else {
-            return res.send({ status: "error", msg: "Predios NO encontrados!!!" });
+        if (properties !== null && properties.length > 0) {
+            return res.status(200).send({ msg: "Predios visualizados!!!", properties });
         }
+        return res.send({ msg: "No existen predios activos en la base de datos!!!" });
     } catch (error) {
         console.log(error)
+        return res.status(500).send();
     }
 }
 
@@ -76,12 +76,12 @@ exports.findPropertiesByOwnerId = async (req, res) => {
         const { owner_id_number } = req.params
         const foundProperties = await propertyModel.find({ owner_id_number, active: true })
         if (foundProperties !== null && foundProperties.length > 0) {
-            return res.send({ status: "ok", msg: "Predios Encontrados", foundProperties });
+            return res.status(200).send({ msg: "Predios Encontrados", foundProperties });
         }
-        return res.send({ status: "ok", msg: "No se encontraron resultados para el documento", foundProperties: [] });
+        return res.send({ msg: "No se encontraron resultados para el documento" });
     } catch (error) {
         console.log("Error consultando predios: " + error)
-        return res.send({ status: "error", msg: "Server error" });
+        return res.status(500).send();
     }
 }
 
@@ -91,11 +91,11 @@ exports.getAssociatedProperties = async (req, res) => {
         const { user_id } = req.params;
         const associatedProperties = await propertyModel.find({ owner: user_id, active: true })
         if (associatedProperties !== null && associatedProperties.length > 0) {
-            return res.status(200).send({ status: "ok", msg: "Predios visualizados!!!", associatedProperties });
+            return res.status(200).send({ msg: "Predios visualizados!!!", associatedProperties });
         }
-        return res.send({ status: "error", msg: "Predios NO encontrados!!!" });
+        return res.send({ msg: "Predios NO encontrados!!!" });
     } catch (error) {
         console.log("Error listando predios asociados: " + error)
-        return res.send({ status: "error", msg: error.message });
+        return res.status(500).send();
     }
 }

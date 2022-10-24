@@ -32,14 +32,14 @@ exports.login = async (req, res) => {
 // Listar usuarios:
 exports.getUsers = async (req, res) => {
     try {
-        const users = await userModel.find({ active: true }) // Usuarios activos (active: true)
-        if (users !== null) {
-            return res.status(200).send({ status: "ok", msg: "Usuarios encontrados!!!", users });
-        } else {
-            return res.send({ status: "error", msg: "Usuarios NO encontrados!!!" });
+        const users = await userModel.find({ active: true })
+        if (users !== null && users.length > 0) {
+            return res.status(200).send({ msg: "Usuarios encontrados!!!", users });
         }
+        return res.send({ msg: "No existen usuarios activos en la base de datos!!!" });
     } catch (error) {
-        console.log(error)
+        console.log("Error listando usuarios: " + error)
+        return res.status(500).send();
     }
 }
 
