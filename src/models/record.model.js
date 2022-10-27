@@ -4,16 +4,20 @@ const Schema = mongoose.Schema;
 const recordsSchema = new Schema(
     {
         author: {
-            type: String
+            type: String,
+            required: true
         },
         author_id: {
-            type: Schema.Types.ObjectId
+            type: Schema.Types.ObjectId,
+            required: true
         },
         action: {
-            type: String
+            type: String,
+            required: true
         },
         property_code: {
-            type: String
+            type: String,
+            required: true
         }
     },
     {

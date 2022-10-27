@@ -12,7 +12,7 @@ propertyRoutes.get("/list", getProperties)
 propertyRoutes.get("/records", getRecords)
 propertyRoutes.post("/create", authProperties, createProperty)
 propertyRoutes.put("/edit/:property_id", authProperties, updateProperty)
-propertyRoutes.delete("/delete/:property_id", authProperties, deleteProperty)
+propertyRoutes.put("/delete/:property_id", authProperties, deleteProperty)
 propertyRoutes.get("/find/:owner_id_number", findPropertiesByOwnerId)
 propertyRoutes.get("/list-associated-properties/:user_id", getAssociatedProperties)
 

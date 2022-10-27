@@ -15,17 +15,18 @@ exports.login = async (req, res) => {
         const { email, password } = req.body
         const user = await userModel.findOne({ email, active: true }) // Validar usuario
         if (!user) {
-            return res.send({ status: "error", msg: "Credenciales NO válidas. Intentelo de nuevo!!!" });
+            return res.send({ msg: "Credenciales NO válidas. Intentelo de nuevo!!!", error: "Unvalid credentials" });
         }
         const passOK = await compare(password, user.password) // Validar contraseña
         if (passOK) {
             const token = generateAuthToken(user);
-            return res.status(200).send({ status: "ok", user, token });
+            return res.status(200).send({ user, token });
         } else {
-            return res.send({ status: "error", msg: "Credenciales NO válidas. Intentelo de nuevo!!!" });
+            return res.send({ msg: "Credenciales NO válidas. Intentelo de nuevo!!!", error: "Unvalid credentials" });
         }
     } catch (error) {
         console.log("Error iniciando sesión: " + error)
+        return res.send({ msg: "No es posible validar las credenciales!!!", error: error.message });
     }
 }
 
@@ -122,8 +123,8 @@ exports.deleteUser = async (req, res) => {
 exports.changePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body
-        const { _id } = getPayload(req.headers.authorization)
-        const user = await userModel.findOne({ _id }) // Buscar usuario a actualizar
+        const { user_id } = req.params;
+        const user = await userModel.findOne({ _id: user_id }) // Buscar usuario a actualizar
         const passOK = await compare(currentPassword, user.password) // Validar password actual
         if (passOK) {
             user.password = newPassword

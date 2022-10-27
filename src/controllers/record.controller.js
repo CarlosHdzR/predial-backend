@@ -8,7 +8,7 @@ exports.getRecords = async (req, res) => {
         if (records !== null && records.length > 0) {
             return res.status(200).send({ msg: "Registros encontrados!!!", records });
         }
-        return res.send({ msg: "No existen registros en la base de datos!!!" });
+        return res.send({ msg: "No existen registros de actividad en la base de datos!!!" });
     } catch (error) {
         console.log(error)
         return res.status(500).send();
