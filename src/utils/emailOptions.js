@@ -49,7 +49,7 @@ exports.resetPasswordOptions = (email, name, resetToken) => {
         html: `<p>Sr(a). <b>${name}</b>,</p>
 
         <p>Usted solicitó restablecer su contraseña.
-        Por favor, ingrese en este <a href="${CLIENT_HOST}/reset-password/${resetToken}">LINK</a> y siga las instrucciones.</p>
+        Por favor, ingrese en este <a href="${CLIENT_HOST}reset-password/${resetToken}">LINK</a> y siga las instrucciones.</p>
 
         <h3>El link tendrá validez durante 1 hora a partir de este momento!!!</h3>
         `
