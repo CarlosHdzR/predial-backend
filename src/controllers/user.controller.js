@@ -207,3 +207,15 @@ exports.associateProperty = async (req, res) => {
         res.send({ msg: "No fue posible asociar el predio!!!", error: error.message });
     }
 }
+
+// Pagar impuesto predial:
+exports.payTax = async (req, res) => {
+    try {
+        const { code } = req.body;
+        const property = await propertyModel.findOneAndUpdate({ code }, { $set: { tax_paid: true } }, {new: true});
+        res.status(200).send({ msg: "Pago procesado exitosamente!!!", property });
+    } catch (error) {
+        console.log("Error pagando impuesto: " + error);
+        res.send({ msg: "No fue posible procesar el pago!!!", error: error.message });
+    }
+}

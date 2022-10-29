@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const {
-    login, getUsers, createUser, updateUser, deleteUser,
-    changePassword, getResetLink, resetPassword, associateProperty
+    login, getUsers, createUser, updateUser, deleteUser, changePassword,
+    getResetLink, resetPassword, associateProperty, payTax
 } = require('../controllers/user.controller');
 const { authUsers } = require('../middlewares/authUsers');
 const { upload } = require('../middlewares/fileUpload');
@@ -18,5 +18,6 @@ userRoutes.put("/change-password/:user_id", authUsers, changePassword)
 userRoutes.put("/get-reset-link", getResetLink)
 userRoutes.put("/reset-password", resetPassword)
 userRoutes.put("/associate-property/:user_id", authUsers, associateProperty)
+userRoutes.put("/pay-tax", payTax)
 
 exports.userRoutes = userRoutes;
