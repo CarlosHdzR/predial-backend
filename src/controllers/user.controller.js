@@ -86,14 +86,15 @@ exports.updateUser = async (req, res) => {
         const data = req.body;
         const { user_id } = req.params;
         const { role } = getPayload(req.headers.authorization);
-        const foundUser = await userModel.findOne({ _id: user_id }); // Buscar usuario a editar
+        const userToEdit = await userModel.findOne({ _id: user_id }); // Buscar usuario a editar
         if (req.files?.image) { // Editar avatar de usuario
-            const result = await uploadAvatar(req, foundUser)
+            const { image } = req.files;
+            const result = await uploadAvatar(image, userToEdit)
             data.avatar = { public_id: result.public_id, secure_url: result.secure_url }
         } else { // Eliminar avatar de usuario
-            data.avatar = await deleteAvatar(data, foundUser);
+            data.avatar = await deleteAvatar(data, userToEdit);
         }
-        await userModel.updateOne({ _id: user_id }, { $set: data });
+        await userToEdit.updateOne({ $set: data });
         const msg = role === 1 ? "Usuario actualizado con éxito!!!" : "Perfil actualizado con éxito!!!";
         const users = await userModel.find({ active: true }); // Obtener usuarios actualizados
         return res.status(200).send({ msg, users });
@@ -111,7 +112,7 @@ exports.deleteUser = async (req, res) => {
         if (user.avatar.public_id) {
             await deleteImage(user.avatar.public_id) // Eliminar imágen de Cloudinary
         }
-        await user.updateOne({ $set: { active: false, avatar: "", user_properties: [] } }) // Usuario inactivo - Limpiar avatar y predios asociados
+        await user.updateOne({ $set: { active: false }, $unset: { avatar: 1, user_properties: 1 } }) // Usuario inactivo - Limpiar avatar y predios asociados
         await propertyModel.updateMany({ owner: user_id }, { $unset: { owner: 1 } }); // Eliminar propietario
         return res.status(200).send({ msg: "Usuario eliminado con éxito!!!" });
     } catch (error) {
@@ -169,7 +170,7 @@ exports.getResetLink = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     try {
         const { newPassword, sentToken } = req.body
-        const user = await userModel.findOne({ reset_token: sentToken, expire_token: { $gt: Date.now() } }) // Validar "reset_token"
+        const user = await userModel.findOne({ reset_token: sentToken, expire_token: { $gt: Date.now() } }) // Validar "reset_token" y "expire_token"
         if (!user) {
             return res.send({ msg: "El link que está utilizando para restablecer su contraseña caducó. Por favor, solicite uno nuevo!!!", error: "Link expired" })
         }
@@ -189,18 +190,10 @@ exports.associateProperty = async (req, res) => {
     try {
         const { user_id } = req.params;
         const { property_id } = req.body;
-        await userModel.updateOne({ _id: user_id },
-            {
-                $push: { user_properties: property_id }
-            });
-        await propertyModel.updateOne({ _id: property_id },
-            {
-                $set: {
-                    owner: user_id
-                }
-            }
+        await userModel.updateOne({ _id: user_id }, { $push: { user_properties: property_id } });
+        const associatedProperty = await propertyModel.findOneAndUpdate(
+            { _id: property_id }, { $set: { owner: user_id } }, { new: true }
         );
-        const associatedProperty = await propertyModel.findOne({ _id: property_id });
         res.send({ msg: "Predio asociado con éxito!!!", associatedProperty });
     } catch (error) {
         console.log("Error asociando predio: " + error)
@@ -212,7 +205,7 @@ exports.associateProperty = async (req, res) => {
 exports.payTax = async (req, res) => {
     try {
         const { code } = req.body;
-        const property = await propertyModel.findOneAndUpdate({ code }, { $set: { tax_paid: true } }, {new: true});
+        const property = await propertyModel.findOneAndUpdate({ code }, { $set: { tax_paid: true } }, { new: true });
         res.status(200).send({ msg: "Pago procesado exitosamente!!!", property });
     } catch (error) {
         console.log("Error pagando impuesto: " + error);
