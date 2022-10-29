@@ -3,13 +3,14 @@ const { transporter } = require('../utils/mailer');
 const { newPropertyOptions } = require('../utils/emailOptions');
 const { getPayload } = require('../utils/getPayload');
 const { createRecord } = require('./record.controller');
+const { userModel } = require('../models/user.model');
 
 // Listar predios:
 exports.getProperties = async (req, res) => {
     try {
         const properties = await propertyModel.find({ active: true })
         if (properties !== null && properties.length > 0) {
-            return res.status(200).send({ msg: "Predios visualizados!!!", properties });
+            return res.status(200).send({ msg: "Predios encontrados!!!", properties });
         }
         return res.send({ msg: "No existen predios activos en la base de datos!!!" });
     } catch (error) {
@@ -59,9 +60,10 @@ exports.updateProperty = async (req, res) => {
 exports.deleteProperty = async (req, res) => {
     try {
         const { property_id } = req.params
-        const property = await propertyModel.findOne({ _id: property_id }) // Buscar predio a eliminar
         const user_id = getPayload(req.headers.authorization)._id; // Extraer "id_number" del usuario que está eliminando el predio 
-        await propertyModel.updateOne({ _id: property_id }, { $set: { active: false } }) // Predio inactivo (active: false)
+        const property = await propertyModel.findOne({ _id: property_id }) // Buscar predio a eliminar
+        await property.updateOne({ $set: { active: false }, $unset: { owner: 1 } }); // Predio inactivo - Eliminar propietario
+        await userModel.updateOne({ _id: property.owner }, { $pull: { user_properties: property_id } }) // Desasociar predio
         const record = await createRecord(user_id, "eliminó", property.code);
         return res.status(200).send({ msg: "Predio eliminado con exito!!!", record });
     } catch (error) {

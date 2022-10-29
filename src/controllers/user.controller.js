@@ -111,7 +111,8 @@ exports.deleteUser = async (req, res) => {
         if (user.avatar.public_id) {
             await deleteImage(user.avatar.public_id) // Eliminar imágen de Cloudinary
         }
-        await userModel.updateOne({ _id: user_id }, { $set: { active: false, avatar: "" } }) // Usuario inactivo (active: false)
+        await user.updateOne({ $set: { active: false, avatar: "", user_properties: [] } }) // Usuario inactivo - Limpiar avatar y predios asociados
+        await propertyModel.updateMany({ owner: user_id }, { $unset: { owner: 1 } }); // Eliminar propietario
         return res.status(200).send({ msg: "Usuario eliminado con éxito!!!" });
     } catch (error) {
         console.log("Error eliminando usuario: " + error)
