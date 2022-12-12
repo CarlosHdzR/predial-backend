@@ -62,7 +62,7 @@ exports.deleteProperty = async (req, res) => {
         const { property_id } = req.params
         const user_id = getPayload(req.headers.authorization)._id; // Extraer "id_number" del usuario que está eliminando el predio 
         const property = await propertyModel.findOneAndUpdate(
-            { _id: property_id }, { $set: { active: false }, $unset: { owner: 1 } } // Predio inactivo - Eliminar propietario
+            { _id: property_id }, { $set: { active: false, tax_paid: false}, $unset: { owner: 1 } } // Predio inactivo - Eliminar propietario
         );
         await userModel.updateOne({ _id: property.owner }, { $pull: { user_properties: property_id } }) // Desasociar predio
         const record = await createRecord(user_id, "eliminó", property.code);
