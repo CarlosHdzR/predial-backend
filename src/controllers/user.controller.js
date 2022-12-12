@@ -48,7 +48,7 @@ exports.getUsers = async (req, res) => {
 exports.createUser = async (req, res) => {
     try {
         const user = await new userModel(req.body)
-        user.avatar = ""
+        user.avatar = {};
         const { id_number, email, name, password } = req.body
         const existingUser = await userModel.findOne({ $or: [{ id_number }, { email }] }) // Validar si el usuario ya existe
         if (!existingUser) {

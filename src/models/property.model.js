@@ -73,4 +73,19 @@ const propertySchema = new Schema(
     }
 )
 
+// Preguardado de datos
+propertySchema.pre("save", async function (next) {
+    this.value = "$" + this.value;
+    this.tax_value = "$" + this.tax_value;
+    next();
+})
+
+propertySchema.pre("updateOne", async function () {
+    const data = this.getUpdate().$set;
+    this.set({
+        value: "$" + data.value,
+        tax_value: "$" + data.tax_value
+    })
+})
+
 exports.propertyModel = mongoose.model("properties", propertySchema);
