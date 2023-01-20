@@ -53,7 +53,7 @@ exports.createUser = async (req, res) => {
         const existingUser = await userModel.findOne({ $or: [{ id_number }, { email }] }) // Validar si el usuario ya existe
         if (!existingUser) {
             if (req.files?.image) { // Subir avatar de usuario
-                const result = await uploadAvatar(req, user)
+                const result = await uploadAvatar(req.files?.image, user)
                 user.setAvatar({ public_id: result.public_id, secure_url: result.secure_url })
             }
             await user.save()
