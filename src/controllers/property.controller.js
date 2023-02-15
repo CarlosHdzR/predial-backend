@@ -88,6 +88,22 @@ exports.findPropertiesByOwnerId = async (req, res) => {
     }
 }
 
+// Asociar predios a usuario:
+exports.associateProperty = async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        const { property_id } = req.body;
+        await userModel.updateOne({ _id: user_id }, { $push: { user_properties: property_id } });
+        const associatedProperty = await propertyModel.findOneAndUpdate(
+            { _id: property_id }, { $set: { owner: user_id } }, { new: true }
+        );
+        res.send({ msg: "Predio asociado con éxito!!!", associatedProperty });
+    } catch (error) {
+        console.log("Error asociando predio: " + error)
+        res.send({ msg: "No fue posible asociar el predio!!!", error: error.message });
+    }
+}
+
 // Listar predios asociados de un usuario:
 exports.getAssociatedProperties = async (req, res) => {
     try {
@@ -100,5 +116,17 @@ exports.getAssociatedProperties = async (req, res) => {
     } catch (error) {
         console.log("Error listando predios asociados: " + error)
         return res.status(500).send();
+    }
+}
+
+// Pagar impuesto predial:
+exports.payTax = async (req, res) => {
+    try {
+        const { code } = req.body;
+        const property = await propertyModel.findOneAndUpdate({ code }, { $set: { tax_paid: true } }, { new: true });
+        res.status(200).send({ msg: "Pago procesado exitosamente!!!", property });
+    } catch (error) {
+        console.log("Error pagando impuesto: " + error);
+        res.send({ msg: "No fue posible procesar el pago!!!", error: error.message });
     }
 }
