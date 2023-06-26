@@ -1,5 +1,5 @@
 # Cadastral Management Platform - Backend
-API developed with Node and used by the project [predial-frontend](https://github.com/carloshrod/predial-frontend).
+API developed with Node, Express and MongoDb, and used by the project [predial-frontend](https://github.com/carloshrod/predial-frontend).
 
 ## Technologies and libraries
 * Node
